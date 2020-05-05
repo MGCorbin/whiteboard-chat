@@ -14,6 +14,8 @@ public:
 
     void push(T data);
     void pop();
+    T font();
+
     bool isEmpty();
     int size();
     void print();
@@ -53,11 +55,21 @@ void SafeQueue<T>::pop()
 }
 
 template <typename T>
+T SafeQueue<T>::font()
+{
+    T ret;                          // make a dummy vairable for the return value
+    pthread_mutex_lock(&m_Mutex);
+    ret = m_Queue.front();          // must load our dummy variable otherwise we will return before we unlock the mutex
+    pthread_mutex_unlock(&m_Mutex);
+    return ret;
+}
+
+template <typename T>
 bool SafeQueue<T>::isEmpty()
 {
-    bool ret;
+    bool ret;                       // make a dummy vairable for the return value
     pthread_mutex_lock(&m_Mutex);
-    ret = m_Queue.empty();          // must make a copy otherwise we will return before we unlock the mutex
+    ret = m_Queue.empty();          // must load our dummy variable otherwise we will return before we unlock the mutex
     pthread_mutex_unlock(&m_Mutex);
     return ret;
 }
@@ -65,9 +77,9 @@ bool SafeQueue<T>::isEmpty()
 template <typename T>
 int SafeQueue<T>::size()
 {
-    int ret;
+    int ret;                        // make a dummy vairable for the return value
     pthread_mutex_lock(&m_Mutex);
-    ret = m_Queue.size();
+    ret = m_Queue.size();           // must load our dummy variable otherwise we will return before we unlock the mutex
     pthread_mutex_unlock(&m_Mutex);
     return ret;
 }
