@@ -14,13 +14,21 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     drawarea.cpp \
-    sendwindow.cpp
+    receivewindow.cpp \
+    sendwindow.cpp \
+    serial.cpp \
+    test.cpp
 
 HEADERS  += \
     drawarea.h \
-    sendwindow.h
+    receivewindow.h \
+    safequeue.h \
+    sendwindow.h \
+    serial.h \
+    test.h
 
 FORMS    += \
+    receivewindow.ui \
     sendwindow.ui
 
 LIBS += -L/usr/local/lib -lpthread
