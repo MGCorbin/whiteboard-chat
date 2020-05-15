@@ -19,13 +19,13 @@ public:
     void paintEvent(QPaintEvent *event) override;
 
 public slots:
-    void setDrawData(QByteArray &arr);
+    void updatePixmap(const QPixmap &p);
+    void updateArray(const QByteArray &arr);
 
 private:
     Ui::ReceiveWindow *ui;
 
     QPixmap m_Pixmap;
-    QByteArray m_DrawData;
 };
 
 #endif // RECEIVEWINDOW_H

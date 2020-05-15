@@ -1,4 +1,5 @@
 #include <QPainter>
+#include <QDebug>
 
 #include "receivewindow.h"
 #include "ui_receivewindow.h"
@@ -23,9 +24,18 @@ void ReceiveWindow::paintEvent(QPaintEvent *event)
     painter.drawPixmap(0, 0, m_Pixmap);     // draw the saved pixmap
 }
 
-void ReceiveWindow::setDrawData(QByteArray &arr)
+void ReceiveWindow::updatePixmap(const QPixmap &p)
 {
-    m_DrawData = arr;
-    m_Pixmap.loadFromData(m_DrawData, "PNG");
+    static int i = 0;
+    qDebug() << "Pixmap updated(" << i++ << ")";
+    m_Pixmap = p;
+    update();
+}
+
+void ReceiveWindow::updateArray(const QByteArray &arr)
+{
+    static int i = 0;
+    qDebug() << "Array updated(" << i++ << ")";
+    m_Pixmap.loadFromData(arr, "PNG");
     update();
 }

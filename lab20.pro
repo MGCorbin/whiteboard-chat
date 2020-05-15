@@ -14,18 +14,19 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     drawarea.cpp \
+    receiver.cpp \
     receivewindow.cpp \
-    sendwindow.cpp \
-    serial.cpp \
-    test.cpp
+    sender.cpp \
+    sendwindow.cpp
 
 HEADERS  += \
     drawarea.h \
+    receiver.h \
     receivewindow.h \
     safequeue.h \
+    sender.h \
     sendwindow.h \
-    serial.h \
-    test.h
+    typedefs.h
 
 FORMS    += \
     receivewindow.ui \

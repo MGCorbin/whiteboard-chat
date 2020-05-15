@@ -41,6 +41,8 @@ void DrawArea::mousePressEvent(QMouseEvent *event)
 
 void DrawArea::mouseMoveEvent(QMouseEvent *event)
 {
+    static int counter = 0;
+
     QPainter painter(&m_Pixmap);                    // instatiate a QPaitner that will draw to the Pixmap
     painter.setPen(QPen(m_PenColour, 3));           // set what colour the pen is based on m_PenColour
     painter.drawLine(m_OldPoint, event->pos());     // draw a line between the old mouse position and the new one
@@ -49,7 +51,19 @@ void DrawArea::mouseMoveEvent(QMouseEvent *event)
     rect = rect.normalized();
     update(rect.x() - 1, rect.y() - 1, rect.width() + 2, rect.height() + 2);        // only update the area that has been drawn to to save us re drawing the entire pixmap
 
-    emit pixmapUpdated(m_Pixmap);
+    counter ++;
+    if(counter == 100)
+    {
+//        emit pixmapUpdated(m_Pixmap);
+        counter = 0;
+    }
 
     m_OldPoint = event->pos();
+}
+
+void DrawArea::mouseReleaseEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event);
+
+    emit pixmapUpdated(m_Pixmap);
 }
