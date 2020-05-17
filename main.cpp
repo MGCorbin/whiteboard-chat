@@ -1,3 +1,19 @@
+/*
+ * LAB P20
+ * Written by: Marcus Corbin
+ * Email: mgc1g18@soton.ac.uk
+ *
+ * <TO DO>
+ * Update completed list!
+ * Do something with status bar...
+ * Add saving files etc
+ * Checksum or parity bit?
+ * Resize events
+ * Erasing?
+ *
+ * <COMPLETED>
+ */
+
 #include <QApplication>
 #include <QDebug>
 
@@ -10,6 +26,9 @@
 #include "sender.h"
 #include "receiver.h"
 
+namespace Comms {
+    volatile bool send_receive(false), data(false);
+}
 
 void* send(void* sender_ptr)
 {
@@ -46,11 +65,13 @@ int main(int argc, char *argv[])
     SendWindow sendWindow;
     ReceiveWindow receiveWindow;
 
-    comms_signals_t comms_signals;
-    pthread_mutex_init(&comms_signals.comms_mutex, NULL);
+    qRegisterMetaType<draw_data_t>();
 
-    Sender sender(sendWindow.drawAreaPtr(), &comms_signals);
-    Receiver receiver(&receiveWindow, &comms_signals);
+    pthread_mutex_t comms_mutex;
+    pthread_mutex_init(&comms_mutex, NULL);
+
+    Sender sender(sendWindow.drawAreaPtr(), &comms_mutex);
+    Receiver receiver(receiveWindow.viewAreaPtr(), &comms_mutex);
 
     sendWindow.show();
     receiveWindow.show();

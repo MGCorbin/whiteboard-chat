@@ -11,13 +11,14 @@ class Sender : public QObject
 {
     Q_OBJECT
 public:
-    explicit Sender(DrawArea *drawArea = nullptr, comms_signals_t *comms_signals = nullptr, QObject *parent = nullptr);
+    explicit Sender(DrawArea *drawArea = nullptr, pthread_mutex_t *comms_mutex = nullptr, QObject *parent = nullptr);
     ~Sender();
 
     void send();
 
 public slots:
-    void serialisePixmap(QPixmap &p);
+    void serialiseData(const draw_data_t &dat);
+    void serialiseData(const QColor &c);
 
 signals:
     void serialDataUpdated(QByteArray &arr);
@@ -29,12 +30,12 @@ private:
 
     SafeQueue<char> *m_SendQueue;
 
-    comms_signals_t *commsSignals;        // comms signals point to the signals defined in main, they do not belong to this class
+    pthread_mutex_t *CommsMutex;        // no m_ as this does not belong to the sender class, we just store a pointer to it
 
-    void serialise();
+    void serialiseColour();
+
     bool isReceiving();
-    char hexToAscii(uint8_t d);
-
+    bool isSending();
 };
 
 #endif // SENDER_H

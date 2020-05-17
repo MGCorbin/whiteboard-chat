@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 
+#include "typedefs.h"
+#include "viewarea.h"
+
 
 namespace Ui {
 class ReceiveWindow;
@@ -16,16 +19,12 @@ public:
     explicit ReceiveWindow(QWidget *parent = nullptr);
     ~ReceiveWindow();
 
-    void paintEvent(QPaintEvent *event) override;
-
-public slots:
-    void updatePixmap(const QPixmap &p);
-    void updateArray(const QByteArray &arr);
+    ViewArea *viewAreaPtr() const { return m_ViewArea; }
 
 private:
     Ui::ReceiveWindow *ui;
 
-    QPixmap m_Pixmap;
+    ViewArea *m_ViewArea;
 };
 
 #endif // RECEIVEWINDOW_H

@@ -25,6 +25,7 @@ public slots:
 signals:
     void clearScreen();
     void changePenColour(const QColor &c);
+    void changeBackgroundColour(const QColor &c);
 
 private:
     Ui::Window *ui;

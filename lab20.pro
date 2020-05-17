@@ -17,7 +17,8 @@ SOURCES += main.cpp \
     receiver.cpp \
     receivewindow.cpp \
     sender.cpp \
-    sendwindow.cpp
+    sendwindow.cpp \
+    viewarea.cpp
 
 HEADERS  += \
     drawarea.h \
@@ -26,7 +27,8 @@ HEADERS  += \
     safequeue.h \
     sender.h \
     sendwindow.h \
-    typedefs.h
+    typedefs.h \
+    viewarea.h
 
 FORMS    += \
     receivewindow.ui \
