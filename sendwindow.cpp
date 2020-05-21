@@ -72,7 +72,7 @@ void SendWindow::handleMenuBarAction(QAction *Action)
 {
     if(Action == ui->actionAbout)
     {
-        QMessageBox about;
+        QMessageBox about(this);
         about.setText(tr("About Lab P20"));
         about.setInformativeText(tr("This is a GUI program that allows users to draw in one window, the "
                                     "data is then serialsed and send to the other window using global booleans.\n\n"
