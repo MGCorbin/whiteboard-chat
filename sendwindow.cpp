@@ -6,6 +6,10 @@
 #include "sendwindow.h"
 #include "ui_sendwindow.h"
 
+/*
+ * https://doc.qt.io/qt-5/qtwidgets-widgets-scribble-example.html was used as a reference when making this class
+ */
+
 SendWindow::SendWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::Window), m_DrawArea(new DrawArea)
 {

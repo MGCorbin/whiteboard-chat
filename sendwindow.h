@@ -5,6 +5,10 @@
 
 #include "drawarea.h"
 
+/*
+ * https://doc.qt.io/qt-5/qtwidgets-widgets-scribble-example.html was used as a reference when making this class
+ */
+
 #define MESSAGE_TIMEOUT     2000        // time in ms before message dissapears from status bar
 
 namespace Ui {

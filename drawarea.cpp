@@ -4,6 +4,10 @@
 
 #include "drawarea.h"
 
+/*
+ * Class adapted from: https://doc.qt.io/qt-5/qtwidgets-widgets-scribble-example.html
+ */
+
 DrawArea::DrawArea(QWidget *parent)
     : QWidget(parent), m_PenColour(Qt::black), m_PenWidth(3), m_BackgroundColour(Qt::white), m_Pixmap(800, 600)
 {

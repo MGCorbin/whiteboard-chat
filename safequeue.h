@@ -6,8 +6,7 @@
 #include <QDebug>
 
 /*
- * https://stackoverflow.com/questions/31144949/thread-safe-queue-with-pthreads
- * The above website was used to help make this class
+ * https://stackoverflow.com/questions/31144949/thread-safe-queue-with-pthreads was used as a reference when making this class
  */
 
 template <typename T>

@@ -21,7 +21,7 @@ Sender::~Sender()
 
 /*
  * This function takes a byte from the queue and sends it as a stream of bits using the
- * global bools Comms::data and Comms::send_receive
+ * global bools Comms::data, Comms::sending and Comms::received
  * The send_recieve flag is used to ensure we dont transmit before the reciever is ready
  * The send function can only take the flag high and the recieve function can only take it low
  */
