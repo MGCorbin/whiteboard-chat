@@ -8,23 +8,6 @@
 #include <pthread.h>
 #include <stdint.h>
 
-//#define DEBUG_COMMS
-
-#define PACKET_SIZE     17
-
-//typedef struct
-//{
-//    volatile bool sending;
-//    volatile bool receiving;
-//    volatile bool data;
-//    pthread_mutex_t comms_mutex;
-//} comms_signals_t;
-
-namespace Comms {
-    extern volatile bool send_receive, data;
-}
-
-
 typedef union
 {
     int16_t VAL;
@@ -35,12 +18,20 @@ typedef union
     };
 } union16_t;
 
-typedef struct
-{
-    QLine line;
-    QColor col;
-} draw_data_t;
 
-Q_DECLARE_METATYPE(draw_data_t);
+typedef union
+{
+    uint8_t vals[10];               // all our messages are 10 bytes long...
+    struct
+    {
+        union                       // there are then options for how we read and write our messages
+        {
+            char colour[8];         // can be an array of chars that reperesent a colour
+            int16_t data[4];        // or can be an array of numbers that can be uses to send coordiantes etc.
+        };                          // as these live at the same address in memory, we can write the data in a general way and read it back in a speicifc way
+        uint16_t checksum;          // all our messages have a checksum
+    };
+} comms_message_t;                  // this makes encoding and decoding our messages easier
+
 
 #endif // TYPEDEFS_H

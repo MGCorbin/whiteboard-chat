@@ -15,27 +15,23 @@ public:
     ~Sender();
 
     void send();
+    pthread_mutex_t *mutexPtr() const { return CommsMutex; }
 
 public slots:
-    void serialiseData(const draw_data_t &dat);
-    void serialiseData(const QColor &c);
-
-signals:
-    void serialDataUpdated(QByteArray &arr);
+    void serializeLine(const QLine &l);
+    void serializeClear(const QColor &c);
+    void serializePenColour(const QColor &c);
+    void serializePenWidth(const int w);
 
 private:
-    QPixmap m_Pixmap;
-    QByteArray m_SendData;
-    int m_OldDrawDataSize;
-
     SafeQueue<char> *m_SendQueue;
-
     pthread_mutex_t *CommsMutex;        // no m_ as this does not belong to the sender class, we just store a pointer to it
+    comms_message_t m_SendMessage;
 
     void serialiseColour();
-
-    bool isReceiving();
-    bool isSending();
+    void encodeMessage();
+    bool isReceived();
 };
+
 
 #endif // SENDER_H

@@ -2,16 +2,18 @@
  * LAB P20
  * Written by: Marcus Corbin
  * Email: mgc1g18@soton.ac.uk
+ * Icons made by Freepik from www.flaticon.com
+ * They are also credited in the "About" section (on the menu bar)
  *
- * <TO DO>
- * Update completed list!
- * Do something with status bar...
- * Add saving files etc
- * Checksum or parity bit?
- * Resize events
- * Erasing?
+ * <FUTURE>
+ * Add saving files?
  *
  * <COMPLETED>
+ * Changed toolbar text into icons
+ * About secion added & freepik credited
+ * Resize Events
+ * Checksum added
+ * Stop bool added to ensure program terminates correctly
  */
 
 #include <QApplication>
@@ -27,36 +29,14 @@
 #include "receiver.h"
 
 namespace Comms {
-    volatile bool send_receive(false), data(false);
+    volatile bool sending(false), received(false), data(false);     // 'GPIO' pins used for communcation
+    volatile bool enable(true);                                     // used as an enable to ensure correct termination of program
 }
 
-void* send(void* sender_ptr)
-{
-    Sender *sender = (Sender*)sender_ptr;
-
-    qDebug() << "Send thread started!";
-
-    while(1)
-    {
-        sender->send();
-    }
-
-    pthread_exit(NULL);
-}
-
-void* receive(void* receiver_ptr)
-{
-    Receiver *receiver = (Receiver*)receiver_ptr;
-
-    qDebug() << "Receive thread started!";
-
-    while(1)
-    {
-        receiver->receive();
-    }
-
-    pthread_exit(NULL);
-}
+/* LOCAL FUNCTIONS */
+void* send(void* sender_ptr);
+void* receive(void* receiver_ptr);
+/* -------------- */
 
 int main(int argc, char *argv[])
 {
@@ -64,8 +44,6 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     SendWindow sendWindow;
     ReceiveWindow receiveWindow;
-
-    qRegisterMetaType<draw_data_t>();
 
     pthread_mutex_t comms_mutex;
     pthread_mutex_init(&comms_mutex, NULL);
@@ -98,9 +76,55 @@ int main(int argc, char *argv[])
     int ret = a.exec();
     qDebug() << "Event loop stopped.";
 
-    /* cleanup pthreads */
-    pthread_exit(NULL);
+    Comms::enable = false;                                 // once the event loop has finished, we want comms to stop
+
+    pthread_join(send_thread, NULL);
+    pthread_join(receive_thread, NULL);
 
     /* exit */
     return ret;
+}
+
+void* send(void* sender_ptr)
+{
+    Sender *sender = (Sender*)sender_ptr;
+
+    qDebug() << "Send thread started!";
+
+    while(Comms::enable)
+    {
+        sender->send();
+    }
+
+    qDebug() << "Send thread ending!";
+
+    pthread_exit(NULL);
+}
+
+void* receive(void* receiver_ptr)
+{
+    Receiver *receiver = (Receiver*)receiver_ptr;
+
+    qDebug() << "Receive thread started!";
+
+    while(Comms::enable)
+    {
+        receiver->receive();
+    }
+
+    qDebug() << "Receive thread ending!";
+
+    pthread_exit(NULL);
+}
+
+uint16_t checksum16(uint8_t *data, uint16_t len)            // this function generates a 2 byte checksum used at the end of all our messages
+{
+    uint16_t sum = 0, i;
+
+    for(i=0; i<len; i++)                                    // loop through 'len' bytes
+    {
+        sum += data[i];										// add up all bytes in array, up to length 'len'
+    }
+
+    return (~sum);                                          // return the ones compliment
 }

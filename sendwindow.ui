@@ -23,13 +23,13 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File">
+   <widget class="QMenu" name="menu_Help">
     <property name="title">
-     <string>&amp;File</string>
+     <string>&amp;Help</string>
     </property>
-    <addaction name="actionSave"/>
+    <addaction name="actionAbout"/>
    </widget>
-   <addaction name="menu_File"/>
+   <addaction name="menu_Help"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -39,32 +39,62 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionClear"/>
-   <addaction name="actionPenColour"/>
    <addaction name="actionBackgroundColour"/>
+   <addaction name="actionPenColour"/>
+   <addaction name="actionPenWidth"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionClear">
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/new/icons/clear_screen.png</normaloff>:/new/icons/clear_screen.png</iconset>
+   </property>
    <property name="text">
     <string>Clear</string>
    </property>
+   <property name="toolTip">
+    <string>Clear Screen</string>
+   </property>
   </action>
   <action name="actionPenColour">
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/new/icons/pen_colour.png</normaloff>:/new/icons/pen_colour.png</iconset>
+   </property>
    <property name="text">
     <string>Pen Colour</string>
    </property>
   </action>
   <action name="actionBackgroundColour">
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/new/icons/background_colour.png</normaloff>:/new/icons/background_colour.png</iconset>
+   </property>
    <property name="text">
     <string>Background Colour</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="actionPenWidth">
+   <property name="icon">
+    <iconset resource="Resources.qrc">
+     <normaloff>:/new/icons/pen_thickness.png</normaloff>:/new/icons/pen_thickness.png</iconset>
+   </property>
    <property name="text">
-    <string>Save</string>
+    <string>Pen Width</string>
+   </property>
+   <property name="toolTip">
+    <string>Pen Width</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="Resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -5,6 +5,8 @@
 
 #include "drawarea.h"
 
+#define MESSAGE_TIMEOUT     2000        // time in ms before message dissapears from status bar
+
 namespace Ui {
 class Window;
 }
@@ -19,13 +21,15 @@ public:
 
     DrawArea* drawAreaPtr() const { return m_DrawArea; }
 
-public slots:
+private slots:
     void handleToolbarAction(QAction *Action);
+    void handleMenuBarAction(QAction *Action);
+    void handleDrawAreaFeedback();
 
 signals:
-    void clearScreen();
+    void clearScreen(const QColor &c);
     void changePenColour(const QColor &c);
-    void changeBackgroundColour(const QColor &c);
+    void changePenWidth(const int w);
 
 private:
     Ui::Window *ui;

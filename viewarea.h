@@ -11,13 +11,20 @@ class ViewArea : public QWidget
 public:
     explicit ViewArea(QWidget *parent = nullptr);
 
+protected:
     void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 public slots:
-    void drawLine(const draw_data_t &dat);
+    void drawLine(const QLine &l);
     void clearScreen(const QColor &c);
+    void setPenColour(const QColor &c);
+    void setPenWidth(int w);
 
 private:
+    QColor m_PenColour;
+    int m_PenWidth;
+    QColor m_BackgroundColour;
     QPixmap m_Pixmap;
 
 };

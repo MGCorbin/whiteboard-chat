@@ -1,123 +1,182 @@
 #include "receiver.h"
+#include "main.h"
 
 Receiver::Receiver(ViewArea *viewArea, pthread_mutex_t *comms_mutex, QObject *parent)
-    : QObject(parent), m_Pixmap(800, 600), m_ReceiveQueue(new SafeQueue<char>), CommsMutex(comms_mutex)
+    : QObject(parent), m_ReceiveQueue(new SafeQueue<char>), CommsMutex(comms_mutex)
 {
-    connect(this, SIGNAL(lineReceived(const draw_data_t &)), viewArea, SLOT(drawLine(const draw_data_t &)), Qt::QueuedConnection);
-    connect(this, SIGNAL(clearReceived(const QColor &)), viewArea, SLOT(clearScreen(const QColor &)));
+    connect(this, SIGNAL(lineReceived(const QLine &)), viewArea, SLOT(drawLine(const QLine &)), Qt::QueuedConnection);
+    connect(this, SIGNAL(clearReceived(const QColor &)), viewArea, SLOT(clearScreen(const QColor &)), Qt::QueuedConnection);
+    connect(this, SIGNAL(penColourReceived(const QColor &)), viewArea, SLOT(setPenColour(const QColor &)), Qt::QueuedConnection);
+    connect(this, SIGNAL(penWidthReceived(const int)), viewArea, SLOT(setPenWidth(const int)), Qt::QueuedConnection);
 }
 
 void Receiver::receive()
 {
     char receive_byte = 0;
+
     for(int i=0; i<8; i++)
     {
-
-        while(isSending() == false);                        // wait until we see the send flag go high...
-
         pthread_mutex_lock(CommsMutex);
-        receive_byte |= Comms::data << i;            // load in the data to the correct position on the receive byte
+        Comms::received = false;                            // initaially we have recieved nothing...
         pthread_mutex_unlock(CommsMutex);
 
+        while(isSending() == false && Comms::enable);       // wait until we see the send flag go high, when it goes high, data is ready to be read
+                                                            // enable must also be checked to stop us from waiting here and holding up the program if the user closes the windows
+        pthread_mutex_lock(CommsMutex);
+        receive_byte |= Comms::data << i;                   // load data into the 'i'th bit of recieve_byte
 #ifdef DEBUG_COMMS
-        qDebug() << "R<" << i << ">: " << commsSignals->data;
+       qDebug() << "R(" << i << "): " << Comms::data;
 #endif
+        pthread_mutex_unlock(CommsMutex);
 
         pthread_mutex_lock(CommsMutex);
-        Comms::send_receive = false;
+        Comms::received = true;                             // now that we have the data, can set the recived flag true, telling the sender we are ready for more data
         pthread_mutex_unlock(CommsMutex);
-    }
 
-    /*
-     * at this point we know that receiving signal is true, therefore if we process data here,
-     * we can be sure that we will not recieve any more data until we restart the for loop
-     * (after we have finished processing)
-     */
+        while(isSending() == true);                         // wait until we see the send flag go low (a new message is being prepared)
+    }
 
     m_ReceiveQueue->push(receive_byte);
 
-    static int counter = 0;
-    counter ++;
+    /*
+     * at this point we know that the received flag is true
+     * the sender will not give us any more data until we set received false
+     * we can therefore process our data here, knowing we wont get any more until we have finished
+     */
 
-    if(counter == 17)
+    if(m_ReceiveQueue->size() == sizeof(m_ReceiveMessage.vals) + 1)     // 10 byte message + 1 for the message ID
     {
-        counter = 0;
-        deserialse();
+        handleDeserialize();
     }
-
-//    qDebug() << "Received byte: " << receive_byte;
-//    qDebug() << " ";
 }
 
-void Receiver::deserialse()
+void Receiver::handleDeserialize()
 {
-    QByteArray raw_colour;
-
-    if(m_ReceiveQueue->font() == '<')
+    switch(m_ReceiveQueue->front())
     {
-        m_ReceiveQueue->pop();
-
-        for(int i = 0; i < 7; i++)
+        case 'L':       deserializeLine();          break;
+        case 'C':       deserializeClear();         break;
+        case 'P':       deserializePenColour();     break;
+        case 'W':       deserializePenWidth();      break;
+        default:
         {
-            raw_colour.push_back(m_ReceiveQueue->font());
-            m_ReceiveQueue->pop();
-        }
+            qDebug() << "Unknown Command!";
 
-        union16_t x1;
-        union16_t y1;
-        union16_t x2;
-        union16_t y2;
-
-        x1.BYTE1 = m_ReceiveQueue->font();
-        m_ReceiveQueue->pop();
-        x1.BYTE0 = m_ReceiveQueue->font();
-        m_ReceiveQueue->pop();
-        y1.BYTE1 = m_ReceiveQueue->font();
-        m_ReceiveQueue->pop();
-        y1.BYTE0 = m_ReceiveQueue->font();
-        m_ReceiveQueue->pop();
-        x2.BYTE1 = m_ReceiveQueue->font();
-        m_ReceiveQueue->pop();
-        x2.BYTE0 = m_ReceiveQueue->font();
-        m_ReceiveQueue->pop();
-        y2.BYTE1 = m_ReceiveQueue->font();
-        m_ReceiveQueue->pop();
-        y2.BYTE0 = m_ReceiveQueue->font();
-        m_ReceiveQueue->pop();
-
-        if(m_ReceiveQueue->font() == '>')
-        {
-            m_ReceiveQueue->pop();
-            draw_data_t new_data;
-            new_data.col.setNamedColor(raw_colour);
-            new_data.line = QLine(x1.VAL, y1.VAL, x2.VAL, y2.VAL);
-
-            if(new_data.line == QLine(0x7F7F, 0x7F7F, 0x7F7F, 0x7F7F))
+            while(!m_ReceiveQueue->isEmpty())                   // if we get an unknown command, the best we can do is empty the queue, ready for the next message
             {
-                emit clearReceived(new_data.col);
+                m_ReceiveQueue->pop();
             }
-            else
-            {
-                emit lineReceived(new_data);
-            }
+            break;
         }
+    }
+}
 
-//        qDebug() << "Recieved colour: " << raw_colour;
+void Receiver::deserializeLine()
+{
+    m_ReceiveQueue->pop();                                      // pop off the 'D', we dont need this to construct our line...
+    decodeMessage();                                            // we have recieved a message, as all messages have the same format we can decode them in the same way...
 
+    if(m_ReceiveMessage.checksum == checksum16(m_ReceiveMessage.vals, sizeof(m_ReceiveMessage.data)))
+    {                                                           // if the received checksum == claculated checksum, emit the new line
+        emit lineReceived(QLine(m_ReceiveMessage.data[0], m_ReceiveMessage.data[1], m_ReceiveMessage.data[2], m_ReceiveMessage.data[3]));
     }
     else
     {
-        qDebug() << "ERROR!";
-        /* reception error! */
+        qDebug() << "Draw Message Checksum Error!";
+
+        while(!m_ReceiveQueue->isEmpty())                       // if we have a checksum error, the best we can do is empty the queue, ready for next message
+        {
+            m_ReceiveQueue->pop();
+        }
     }
 }
 
-bool Receiver::isSending()
+void Receiver::deserializeClear()
 {
-    bool ret;
+    m_ReceiveQueue->pop();
+
+    decodeMessage();
+
+    if(m_ReceiveMessage.checksum == checksum16(m_ReceiveMessage.vals, sizeof(m_ReceiveMessage.data)))
+    {
+        emit clearReceived(QColor(m_ReceiveMessage.colour));
+    }
+    else
+    {
+        qDebug() << "Clear Message Checksum Error!";
+
+        while(!m_ReceiveQueue->isEmpty())                       // if we have a checksum error, the best we can do is empty the queue, ready for next message
+        {
+            m_ReceiveQueue->pop();
+        }
+    }
+}
+
+void Receiver::deserializePenColour()
+{
+    m_ReceiveQueue->pop();
+    decodeMessage();
+
+    if(m_ReceiveMessage.checksum == checksum16(m_ReceiveMessage.vals, sizeof(m_ReceiveMessage.data)))
+    {
+        emit penColourReceived(QColor(m_ReceiveMessage.colour));
+    }
+    else
+    {
+        qDebug() << "Pen Colour Message Checksum Error!";
+
+        while(!m_ReceiveQueue->isEmpty())                       // if we have a checksum error, the best we can do is empty the queue, ready for next message
+        {
+            m_ReceiveQueue->pop();
+        }
+    }
+}
+
+void Receiver::deserializePenWidth()
+{
+    m_ReceiveQueue->pop();
+    decodeMessage();
+
+    if(m_ReceiveMessage.checksum == checksum16(m_ReceiveMessage.vals, sizeof(m_ReceiveMessage.data)))
+    {
+        emit penWidthReceived((int)m_ReceiveMessage.data[0]);
+    }
+    else
+    {
+        qDebug() << "Pen Width Message Checksum Error!";
+
+        while(!m_ReceiveQueue->isEmpty())                           // if we have a checksum error, the best we can do is empty the queue, ready for next message
+        {
+            m_ReceiveQueue->pop();
+        }
+    }
+}
+
+void Receiver::decodeMessage()                                          // this function fills the m_RecieveData variable with stuff from the queue...
+{                                                                       // as all messages have same format we can use this general function for every message
+    uint8_t high, low;
+    for(int i = 0; i < (int)sizeof(m_ReceiveMessage.data) / 2; i++)     // get the data from the queue
+    {
+        high = m_ReceiveQueue->front();                                  // load up the temporary high variable
+        m_ReceiveQueue->pop();
+        low= m_ReceiveQueue->front();                                    // load up the temporary low variable
+        m_ReceiveQueue->pop();
+        m_ReceiveMessage.data[i] = low | (high << 8);                   // set the data (each data element is a uint16_t)
+    }
+
+    high = m_ReceiveQueue->front();                                      // repeat this to get the checksum
+    m_ReceiveQueue->pop();
+    low = m_ReceiveQueue->front();
+    m_ReceiveQueue->pop();
+    m_ReceiveMessage.checksum = low | (high << 8);                      // set the .checksum of our receiveMessage
+}
+
+bool Receiver::isSending()                                          // this function allows us to poll the flag without keeping the mutex locked
+{
+    bool ret;                                                           // setup a dummy variable
     pthread_mutex_lock(CommsMutex);
-    ret = Comms::send_receive;
+    ret = Comms::sending;                                               // read the value into the dummy var while the mutex is locked
     pthread_mutex_unlock(CommsMutex);
-    return ret;
+    return ret;                                                         // return the dummy after unlcoking
 }
 

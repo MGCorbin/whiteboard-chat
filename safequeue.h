@@ -5,6 +5,11 @@
 #include <pthread.h>
 #include <QDebug>
 
+/*
+ * https://stackoverflow.com/questions/31144949/thread-safe-queue-with-pthreads
+ * The above website was used to help make this class
+ */
+
 template <typename T>
 class SafeQueue
 {
@@ -14,7 +19,7 @@ public:
 
     void push(T data);
     void pop();
-    T font();
+    T front();
 
     bool isEmpty();
     int size();
@@ -55,7 +60,7 @@ void SafeQueue<T>::pop()
 }
 
 template <typename T>
-T SafeQueue<T>::font()
+T SafeQueue<T>::front()
 {
     T ret;                          // make a dummy vairable for the return value
     pthread_mutex_lock(&m_Mutex);

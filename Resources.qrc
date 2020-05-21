@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/new/icons">
+        <file>pen_colour.png</file>
+        <file>clear_screen.png</file>
+        <file>background_colour.png</file>
+        <file>pen_thickness.png</file>
+    </qresource>
+</RCC>

@@ -22,6 +22,7 @@ SOURCES += main.cpp \
 
 HEADERS  += \
     drawarea.h \
+    main.h \
     receiver.h \
     receivewindow.h \
     safequeue.h \
@@ -35,3 +36,6 @@ FORMS    += \
     sendwindow.ui
 
 LIBS += -L/usr/local/lib -lpthread
+
+RESOURCES += \
+    Resources.qrc
