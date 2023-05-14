@@ -6,11 +6,11 @@
 Sender::Sender(DrawArea *drawArea, pthread_mutex_t *comms_mutex, QObject *parent)
     : QObject(parent), m_SendQueue(new SafeQueue<char>), CommsMutex(comms_mutex)
 {
-    /* connect all the signals from the draw area so that we can seriase our commands in real time */
-    connect(drawArea, SIGNAL(lineDrawn(const QLine &)), this, SLOT(serializeLine(const QLine &)), Qt::QueuedConnection);
-    connect(drawArea, SIGNAL(drawAreaCleared(const QColor &)), this, SLOT(serializeClear(const QColor &)), Qt::QueuedConnection);
-    connect(drawArea, SIGNAL(penColourChanged(const QColor &)), this, SLOT(serializePenColour(const QColor &)), Qt::QueuedConnection);
-    connect(drawArea, SIGNAL(penWidthChanged(const int)), this, SLOT(serializePenWidth(const int)), Qt::QueuedConnection);
+    /* connect all the signals from the draw area so that we can serialise our commands in real time */
+    connect(drawArea, &DrawArea::lineDrawn,         this, &Sender::serializeLine,       Qt::QueuedConnection);
+    connect(drawArea, &DrawArea::drawAreaCleared,   this, &Sender::serializeClear,      Qt::QueuedConnection);
+    connect(drawArea, &DrawArea::penColourChanged,  this, &Sender::serializePenColour,  Qt::QueuedConnection);
+    connect(drawArea, &DrawArea::penWidthChanged,   this, &Sender::serializePenWidth,   Qt::QueuedConnection);
 }
 
 

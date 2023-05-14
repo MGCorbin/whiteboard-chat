@@ -4,10 +4,10 @@
 Receiver::Receiver(ViewArea *viewArea, pthread_mutex_t *comms_mutex, QObject *parent)
     : QObject(parent), m_ReceiveQueue(new SafeQueue<char>), CommsMutex(comms_mutex)
 {
-    connect(this, SIGNAL(lineReceived(const QLine &)), viewArea, SLOT(drawLine(const QLine &)), Qt::QueuedConnection);
-    connect(this, SIGNAL(clearReceived(const QColor &)), viewArea, SLOT(clearScreen(const QColor &)), Qt::QueuedConnection);
-    connect(this, SIGNAL(penColourReceived(const QColor &)), viewArea, SLOT(setPenColour(const QColor &)), Qt::QueuedConnection);
-    connect(this, SIGNAL(penWidthReceived(const int)), viewArea, SLOT(setPenWidth(const int)), Qt::QueuedConnection);
+    connect(this, &Receiver::lineReceived,      viewArea, &ViewArea::drawLine,      Qt::QueuedConnection);
+    connect(this, &Receiver::clearReceived,     viewArea, &ViewArea::clearScreen,   Qt::QueuedConnection);
+    connect(this, &Receiver::penColourReceived, viewArea, &ViewArea::setPenColour,  Qt::QueuedConnection);
+    connect(this, &Receiver::penWidthReceived,  viewArea, &ViewArea::setPenWidth,   Qt::QueuedConnection);
 }
 
 void Receiver::receive()

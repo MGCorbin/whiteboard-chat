@@ -16,25 +16,25 @@ SendWindow::SendWindow(QWidget *parent) :
     ui->setupUi(this);
 
     /* connect the signals emitted when a user presses a toolbar button to the correct slot for the draw area to deal with */
-    connect(this, SIGNAL(clearScreen(const QColor &)), m_DrawArea, SLOT(clearDrawArea(const QColor &)));
-    connect(this, SIGNAL(changePenColour(const QColor &)), m_DrawArea, SLOT(setPenColour(const QColor &)));
-    connect(this, SIGNAL(changePenWidth(const int)), m_DrawArea, SLOT(setPenWidth(const int)));
+    connect(this, &SendWindow::clearScreen,     m_DrawArea, &DrawArea::clearDrawArea);
+    connect(this, &SendWindow::changePenColour, m_DrawArea, &DrawArea::setPenColour);
+    connect(this, &SendWindow::changePenWidth,  m_DrawArea, &DrawArea::setPenWidth);
 
     /* SendWindow::handleToolbarAction method is called when a button on the tool bar is pressed */
-    connect(ui->mainToolBar, SIGNAL(actionTriggered(QAction*)), this, SLOT(handleToolbarAction(QAction*)));
+    connect(ui->mainToolBar, &QToolBar::actionTriggered, this, &SendWindow::handleToolbarAction);
 
     /* SendWindow::handleMenuBarAction method is called when a button on the menu bar is pressed */
-    connect(ui->menuBar, SIGNAL(triggered(QAction*)), this, SLOT(handleMenuBarAction(QAction*)));
+    connect(ui->menuBar, &QMenuBar::triggered, this, &SendWindow::handleMenuBarAction);
 
     /* connect all the ui actions to the handleHover slot, means we can display text of what the user is hovering over in the statusBar */
-    connect(ui->actionClear, SIGNAL(hovered()), this, SLOT(handleDrawAreaFeedback()));
-    connect(ui->actionPenColour, SIGNAL(hovered()), this, SLOT(handleDrawAreaFeedback()));
-    connect(ui->actionBackgroundColour, SIGNAL(hovered()), this, SLOT(handleDrawAreaFeedback()));
+    connect(ui->actionClear,            &QAction::hovered, this, &SendWindow::handleDrawAreaFeedback);
+    connect(ui->actionPenColour,        &QAction::hovered, this, &SendWindow::handleDrawAreaFeedback);
+    connect(ui->actionBackgroundColour, &QAction::hovered, this, &SendWindow::handleDrawAreaFeedback);
 
     /* connect the pressed and released signal from the DrawArea to the handle signals slot, lets us say when we are drawing or not */
-    connect(m_DrawArea, SIGNAL(pressed()), this, SLOT(handleDrawAreaFeedback()));
-    connect(m_DrawArea, SIGNAL(released()), this, SLOT(handleDrawAreaFeedback()))
-;
+    connect(m_DrawArea, &DrawArea::pressed,     this, &SendWindow::handleDrawAreaFeedback);
+    connect(m_DrawArea, &DrawArea::released,    this, &SendWindow::handleDrawAreaFeedback);
+
     setCentralWidget(m_DrawArea);
 
     this->setWindowTitle("Send Window");
